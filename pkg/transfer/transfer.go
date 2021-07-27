@@ -50,20 +50,25 @@ func (s *Service) Card2Card(from string, to string, amount int64) (total int64, 
 	}
 
 	total = amount + sumCommission
-	if (!fromBool && !toBool) || !fromBool {
-		ok = true
+	if !fromBool && !toBool {
+		return total, true
 	}
 
-	if fromBool {
-		newBalance := fromCard.Balance - total
-		if newBalance > 0 {
-			fromCard.Balance = newBalance
-			ok = true
-		}
-	}
-
-	if toBool {
+	if !fromBool && toBool {
 		toCard.Balance += amount
+		return total, true
+	}
+
+	newBalance := fromCard.Balance - total
+	if toBool && newBalance > 0 {
+		fromCard.Balance = newBalance
+		toCard.Balance += amount
+		return total, true
+	}
+
+	if !toBool && newBalance > 0 {
+		fromCard.Balance = newBalance
+		return total, true
 	}
 
 	return total, ok
